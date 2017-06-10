@@ -1,0 +1,199 @@
+使用的插件：  酷Q Air 。
+
+
+
+接口说明：
+
+发送和接受消息的格式为json，下面为服务器向客户端发送消息的示例：
+{    "error": "0",    "act": "21",    "fromQQ": "1234",    "subType": "11",    "sendTime": "1479679322",    "msg": "你好啊！",    "font": "52996664"}
+error表示错误代码，一般为0，act为21表示这是一个私聊消息，上述消息表示qq号为1234的好友向CoolQ用户发送了一条内容为“你好啊”的消息
+
+服务器事件id及各字段名词如下（注意区分大小写）：
+
+2 群消息
+subType，sendTime，fromGroup, fromQQ ，fromAnonymous,  msg，font, username, nick, sex, age, fromGroupName
+红色字段为LEMOC所加字段，原CoolQ消息之中无此字段，username为qq昵称，nick是群名片，sex性别，age年龄，fromGroupName为QQ群的名称
+示例：
+{    "username": "泰兰德",    "nick": "泰奶奶",    "sex": "0",    "age": "12000",    "error": "0",    "act": "2",    "fromGroup": "1234",    "fromGroupName": "月之女祭司",    "fromQQ": "1234",    "subType": "1",    "sendTime": "1481481775",    "fromAnonymous": "",    "msg": "谁看到玛法里奥了？",    "font": "7141560"}
+
+
+
+4 讨论组消息
+subType，sendTime，fromDiscuss，fromQQ，msg，font, nick, sex, age
+红色字段为LEMOC所加字段，原CoolQ消息之中无此字段，含义与21 私聊消息相同
+
+
+21 私聊消息
+subType （子类型，11/来自好友 1/来自在线状态 2/来自群 3/来自讨论组），sendTime，fromQQ，msg，font, nick, sex, age
+红色字段为LEMOC所加字段，原CoolQ消息之中无此字段，nick为qq昵称，sex性别，age年龄
+示例：
+{    "nick": "奈法利安",    "sex": "0",    "age": "2000",    "error": "0",    "act": "21",    "fromQQ": "12345",    "subType": "11",    "sendTime": "1481481771",    "font": "7140312",    "msg": "游戏开始！"}
+
+
+101 群事件-管理员变动
+subType（1/被取消管理员 2/被设置管理员），sendTime，fromGroup，beingOperateQQ
+
+102 群事件-群成员减少
+subType（子类型，1/群员离开 2/群员被踢 3/自己(即登录号)被踢），sendTime，fromGroup，fromQQ（操作者QQ-仅subType为2、3时存在），beingOperateQQ
+
+103 群事件-群成员增加
+subType（子类型，1/管理员已同意 2/管理员邀请），sendTime，fromGroup，fromQQ（操作者QQ-即管理员QQ)，beingOperateQQ
+
+201 好友事件-好友已添加
+subType，sendTime，fromQQ
+
+301 请求-好友添加
+subType，sendTime，fromQQ，msg（附言），responseFlag（反馈标识-处理请求用）
+
+302 请求-群添加
+subType（子类型，1/他人申请入群 2/自己(即登录号)受邀入群），sendTime，fromGroup，fromQQ，msg（附言），responseFlag（反馈标识-处理请求用）
+
+
+
+客户端向服务器端发送消息的示例：
+{    "act": "106",    "QQID": "1234",    "msg": "我很好！"}
+表示向qq号为1234的好友发送一条“我很好”的私聊消息。
+
+act和各字段含义如下，注意区分大小写，可能包含中文的字段，比如msg应使用utf8编码，如有返回数据，也是utf8:
+
+101, 发送群消息
+groupid,msg
+
+103, 发送讨论组消息
+discussid,msg
+
+106, 发送私聊消息
+QQID,msg
+
+110, 发送赞
+QQID
+
+120, 置群员移除
+QQID，groupid，rejectaddrequest
+
+121, 置群员禁言
+QQID，groupid，duration
+
+122, 置群管理员
+QQID，groupid，setadmin
+
+123, 置全群禁言
+QQID，groupid，enableban
+
+124, 置匿名群员禁言
+groupid，duration，anomymous
+
+125, 置群匿名设置
+groupid，enableanomymous
+
+126, 置群成员名片
+groupid，QQID，newcard
+
+127, 置群退出(出于安全起见，该权限没有开启)
+groupid，isdismiss
+
+128, 置群成员专属头衔
+groupid，QQID，duration，newspecialtitle
+
+130, 取群成员信息（注，info返回的是base64字节流，需要经过处理之后获取信息，如果需要以json串方式获取群成员信息请见25303）
+groupid，QQID，nocache
+返回json串字段：
+error, act, return,info
+
+131, 取陌生人信息（注，info返回的是base64字节流，需要经过处理之后获取信息，如果需要以json串方式获取群成员信息请见25304）
+QQID，nocache
+返回json串字段：
+error, act, return,info
+
+140, 置讨论组退出
+discussid
+
+150, 置好友添加请求
+responseoperation，remark，responseflag
+
+151, 置群添加请求
+requesttype，responseoperation，reason，responseflag
+
+另有五个LEMOC定义或提供的接口：
+
+25301,获取登录QQ号
+请求json串只有一个act
+返回json串字段：
+error, act, return,LoginQQ
+
+25302,获取登录昵称
+请求json串只有一个act
+返回json串字段：
+error, act, return,LoginNick
+
+25303,以json串方式返回群成员信息
+groupid,QQID,nocache
+返回json串字段：
+error, act, return, groupid, QQID, username, nick, sex, age, area, jointime, lastsent, level_name, permission, unfriendly, title, titleExpiretime, nickcanchange (各字段具体含义详见本帖19楼说明)
+
+
+25304,以json串方式返回陌生人信息
+QQID,nocache
+返回json串字段：
+error, act, return,QQID,nick,sex,age  (各字段具体含义详见本帖19楼说明)
+
+25305,获取指定QQ号所在的所有群id和群名称
+QQID(此QQID仅为标记用，无论填写的QQ为多少，返回的群列表都是酷Q当前登录QQ号所在的群)
+返回json串字段：
+error，act，return，QQID，GroupList
+说明：
+error为-1表示出错，为0表示正常。
+act为0，return为25305表示是对25305的响应
+QQID为你发送的指定QQ号，以确定是对哪一条消息的响应
+GroupList为一个json列表，示例如下，groupId为群号，groupName为群名称：
+[
+  {            "groupId": "1111",            "groupName": "黑手吹逼群"        },
+  {            "groupId": "2222",            "groupName": "屁股围观群"        },
+  {            "groupId": "3333",            "groupName": "法鸡粉丝群"        }
+]
+
+
+
+获取指定QQ号的QQ头像图片，可见 Byniao丶Lonely 的这个帖子：分享一个QQ头像地址
+
+
+其中130,131,25301,25302,25303,25304,25305等七个消息会有返回数据，返回数据的act为0,同时有一个return字段用于标记数据是哪个消息的返回信息。
+举例来说，想要以获取4321这个群内QQ号为1234的用户，需要构造json串：
+
+{    "act": "25303",    "QQID": "1234",    "groupid": "4321", "nocache":"1" }
+
+发送至LEMOC，之后会受到类似这样的返回字符串：
+
+{
+    "groupid": "4321",
+    "QQID": "1234",
+    "username": "法芮尔·艾玛莉",
+    "nick": "法鸡",
+    "sex": "1",
+    "age": "32",
+    "area": "埃及",
+    "jointime": "1429035533",
+    "lastsent": "1479687648",
+    "level_name": "首席安全官",
+    "permission": "2",
+    "unfriendly": "0",
+    "title": "法老之鹰",
+    "titleExpiretime": "4294967295",
+    "nickcanchange": "1",
+    "error": "0",
+    "act": "0",
+    "return": "25303"
+}
+
+
+
+通过Lemoc发送表情、图片、语音或者艾特某人的方式，请参见这里，在发送给Lemoc的消息里使用CQ码即可，我没有全部测试过，但应该没问题，毕竟，Lemoc只是负责转发。如果有问题请及时反馈。
+
+比如通过Lemoc发送
+{"act":"106","QQID":"1234","msg":"[CQ:face,id=14]"}
+QQ是1234的用户就能收到一个笑脸
+
+
+
+
+http://q1.qlogo.cn/g?b=qq&nk=QQ号码&s=100

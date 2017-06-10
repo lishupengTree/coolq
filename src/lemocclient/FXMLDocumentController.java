@@ -72,6 +72,7 @@ public class FXMLDocumentController implements Initializable {
                 public void onMessage(String message) {
                     AppendToJsonList(message);
                     try {
+                        System.out.println("------"+message);
                         JSON json = JSON.parse(message);
                         System.out.println(String.format("%s", json.get("act")));
                         if (String.format("%s", json.get("act")).trim().equals("21")) {
@@ -79,18 +80,15 @@ public class FXMLDocumentController implements Initializable {
                             System.out.println(msg);
                             AppendToMsgList(msg);
                             //处理私聊的消息
-                            if("1".equals(json.get("msg").toString())){
-                                sendMsg(json.get("fromQQ").toString(),"jwjejwjejwje");
-                            }
-                            System.out.println(456);
-
+                            MsgUtil.putMsg(json.get("fromQQ").toString(),json.get("msg").toString());
                         } else if (String.format("%s", json.get("act")).trim().equals("2")) {
                             String msg = String.format("%s", json.get("fromQQ")) + "在群" + String.format("%s", json.get("fromGroup")) + "里说: " + String.format("%s", json.get("msg"));
                             AppendToMsgList(msg);
+                            MsgUtil.putGroupMsg(json.get("fromQQ").toString(),json.get("msg").toString());
                         } else if (String.format("%s", json.get("act")).trim().equals("4")) {
                             String msg = String.format("%s", json.get("fromQQ")) + "在讨论组" + String.format("%s", json.get("fromDiscuss")) + "里说: " + String.format("%s", json.get("msg"));
                             AppendToMsgList(msg);
-
+                            MsgUtil.putTaolunMsg(json.get("fromQQ").toString(),json.get("msg").toString());
                         }
 
                     } catch (ParserException ex) {
@@ -158,7 +156,6 @@ public class FXMLDocumentController implements Initializable {
         tInput.requestFocus();
     }
 
-
     /**
      * 私聊
      * @param toQQ
@@ -171,7 +168,6 @@ public class FXMLDocumentController implements Initializable {
         System.out.println(json);
         cc.send(json);
     }
-
 
     /**
      * 获得指定文件的byte数组
@@ -197,21 +193,6 @@ public class FXMLDocumentController implements Initializable {
         }
         return buffer;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
